@@ -4,6 +4,7 @@ import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { MaterialModule } from '../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { ApiService } from '../services/api.service';
 
 @Component({
   standalone: true,
@@ -14,6 +15,10 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 })
 export class MapaParqueaderosComponent implements OnInit {
 
+
+  constructor(private api: ApiService) {}
+
+  
   layers: Marker[] = [];
   options = {
     layers: [
@@ -58,11 +63,25 @@ export class MapaParqueaderosComponent implements OnInit {
     }, 5000);
   }
 
-  simularActualizacion() {
+  /*simularActualizacion() {
     this.parqueaderos.forEach(p => {
       p.libres = Math.floor(Math.random() * (p.capacidad + 1));
     });
+  }*/
+
+  simularActualizacion() {
+    this.api.obtenerOcupacionSimulada().subscribe(data => {
+      this.parqueaderos = data.map((d, index) => ({
+        nombre: `Parqueadero ${index + 1}`,
+        lat: this.parqueaderos[index]?.lat || -0.22,
+        lng: this.parqueaderos[index]?.lng || -78.51,
+        capacidad: d.capacidad,
+        libres: d.capacidad - d.ocupados
+      }));
+      this.actualizarMapa();
+    });
   }
+
 
   actualizarMapa() {
   this.layers = this.parqueaderos.map(p => {

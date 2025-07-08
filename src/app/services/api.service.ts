@@ -17,4 +17,14 @@ export class ApiService {
   obtenerAfluencia(): Observable<any> {
     return this.http.get(`${this.baseUrl}/afluencia`);
   }
+
+  obtenerClientesProbables(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/clientes-probables`);
+  }
+
+  obtenerOcupacionSimulada(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8000/ocupacion-real');  
+  }
+
+
 }

@@ -1,0 +1,27 @@
+<h4 class="mb-3">Top Clientes Probables a Volver</h4>
+<table class="table table-bordered table-hover table-sm">
+  <thead class="table-dark">
+    <tr>
+      <th>#</th>
+      <th>Cliente ID</th>
+      <th>Nombre</th>
+      <th>Email</th>
+      <th>Frecuencia</th>
+      <th>Recencia</th>
+      <th>Monto Total</th>
+      <th>Probabilidad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let cliente of clientes; let i = index">
+      <td>{{ i + 1 }}</td>
+      <td>{{ cliente.clienteId }}</td>
+      <td>{{ cliente.nombre_completo || 'Desconocido' }}</td>
+      <td>{{ cliente.email || 'N/A' }}</td>
+      <td>{{ cliente.frecuencia }}</td>
+      <td>{{ cliente.recencia }}</td>
+      <td>{{ cliente.monto_total | currency:'USD' }}</td>
+      <td>{{ (cliente.probabilidad * 100) | number:'1.1-2' }}%</td>
+    </tr>
+  </tbody>
+</table>

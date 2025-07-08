@@ -12,6 +12,7 @@ import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/v
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
 import { PrediccionRetornoComponent } from "../../prediccion-retorno/prediccion-retorno.component";
 import { AfluenciaHeatmapComponent } from "../../afluencia-heatmap/afluencia-heatmap.component";
+import { ClientesProbablesComponent } from "src/app/clientes-probables/clientes-probables.component";
 
 @Component({
   selector: 'app-dashboard1',
@@ -27,7 +28,8 @@ import { AfluenciaHeatmapComponent } from "../../afluencia-heatmap/afluencia-hea
     AppVisitUsaComponent,
     AppProductsComponent,
     AppLatestReviewsComponent,
-    AfluenciaHeatmapComponent
+    AfluenciaHeatmapComponent,
+    ClientesProbablesComponent
 ],
   templateUrl: './dashboard1.component.html',
 })
