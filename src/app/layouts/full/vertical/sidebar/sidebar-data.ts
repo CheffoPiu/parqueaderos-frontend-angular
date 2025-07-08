@@ -2,6 +2,21 @@ import { NavItem } from './nav-item/nav-item';
 
 export const navItems: NavItem[] = [
   {
+    navCap: 'HOME',
+  },
+  {
+    displayName: 'Análisis de Afluencia',
+    iconName: 'layout-dashboard',
+    bgcolor: 'primary',
+    route: '/dashboards/analisis-afluencias',
+  },
+  {
+    displayName: 'Dashboard 2',
+    iconName: 'chart-bar',
+    bgcolor: 'secondary',
+    route: '/dashboards/dashboard2',
+  },
+  {
     navCap: 'Home',
   },
   {

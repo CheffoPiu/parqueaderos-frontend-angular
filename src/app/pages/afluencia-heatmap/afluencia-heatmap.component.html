@@ -1,38 +1,74 @@
 <mat-card class="cardWithShadow">
-    <mat-card-header>
-        <div class="d-flex align-items-center justify-content-between w-100">
-            <div>
-                <mat-card-title>Payments</mat-card-title>
-                <mat-card-subtitle class="f-s-14">Last 7 days</mat-card-subtitle>
-            </div>
-            <div class="text-right">
-                <mat-card-title>12,389</mat-card-title>
-                <span
-                    class="bg-light-warning text-warning border-warning border rounded f-w-600 p-6 p-y-2 f-s-12">-3.8%</span>
-            </div>
-        </div>
-    </mat-card-header>
+  <!-- Encabezado -->
+  <!-- Encabezado con selector incluido -->
+  <mat-card-header>
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <!-- Títulos -->
+      <div>
+        <mat-card-title class="text-primary">Afluencia por Hora y Día</mat-card-title>
+        <mat-card-subtitle class="f-s-14">Últimos 7 días</mat-card-subtitle>
+      </div>
 
-    <mat-card-content class="p-t-30">
-        <div class="rounded-bars">
+      <!-- Selector alineado a la derecha -->
+      <mat-form-field appearance="outline" style="width: 250px; margin-left: 20px;">
+        <mat-label>Parqueadero</mat-label>
+        <mat-select [(value)]="parqueaderoSeleccionado" (selectionChange)="filtrarPorParqueadero()">
+          <mat-option *ngFor="let p of parqueaderosDisponibles" [value]="p">
+            {{ p }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-card-header>
 
-            <div class="table-responsive">
-                <table class="table table-bordered text-center" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>Hora / Día</th>
-                            <th *ngFor="let dia of dias">{{ dia }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let hora of horas; let i = index">
-                            <td><strong>{{ hora }}</strong></td>
-                            <td *ngFor="let j of dias; let k = index" [style.background]="color(matrix[k][i])">
-                                {{ matrix[k][i] }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </mat-card-content>
+
+  <!-- Tabla Heatmap -->
+  <mat-card-content class="p-t-30">
+    <div class="table-responsive">
+      <table class="table table-bordered text-center table-afluencia" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="width: 10%; background: #f5f5f5;">Hora / Día</th>
+            <th *ngFor="let dia of dias" style="background: #f5f5f5;">
+              {{ dia }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hora of horas; let i = index">
+            <td><strong>{{ hora }}</strong></td>
+            <td *ngFor="let j of dias; let k = index"
+                [matTooltip]="'Día: ' + j + ', Hora: ' + hora + ', Afluencia: ' + matrix[k][i]"
+                [style.background]="color(matrix[k][i])"
+                style="
+                  padding: 10px;
+                  font-weight: 500;
+                  border-radius: 6px;
+                  font-size: 13px;
+                  transition: all 0.3s;
+                ">
+              {{ matrix[k][i] }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="m-t-30">
+  <mat-card-header>
+    <mat-card-title class="text-primary">Ranking de Parqueaderos más Usados</mat-card-title>
+    <mat-card-subtitle class="f-s-14">Últimos 7 días</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <apx-chart
+      [series]="[{ name: 'Afluencia', data: chartData }]"
+      [chart]="{ type: 'bar', height: 350 }"
+      [xaxis]="{ categories: chartLabels }"
+      [colors]="['#3f51b5']"
+    ></apx-chart>
+  </mat-card-content>
+</mat-card>
+
