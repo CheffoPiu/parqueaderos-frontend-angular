@@ -10,6 +10,8 @@ import { AppCustomersComponent } from '../../../components/dashboard1/customers/
 import { AppTopProjectsComponent } from '../../../components/dashboard1/top-projects/top-projects.component';
 import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/visit-usa.component';
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
+import { PrediccionRetornoComponent } from "../../prediccion-retorno/prediccion-retorno.component";
+import { AfluenciaHeatmapComponent } from "../../afluencia-heatmap/afluencia-heatmap.component";
 
 @Component({
   selector: 'app-dashboard1',
@@ -25,7 +27,8 @@ import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest
     AppVisitUsaComponent,
     AppProductsComponent,
     AppLatestReviewsComponent,
-  ],
+    AfluenciaHeatmapComponent
+],
   templateUrl: './dashboard1.component.html',
 })
 export class AppDashboard1Component {
