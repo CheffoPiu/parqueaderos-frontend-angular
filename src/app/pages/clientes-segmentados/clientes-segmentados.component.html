@@ -59,3 +59,18 @@
     </div>
   </mat-card-content>
 </mat-card>
+
+<mat-card class="cardWithShadow m-t-30" *ngIf="chartSeries.length > 0">
+  <mat-card-content>
+    <h4 class="mb-3">Gráfico de Segmentación</h4>
+    <apx-chart
+      [series]="chartSeries"
+      [chart]="chartChart"
+      [xaxis]="chartXAxis"
+      [title]="chartTitle"
+      [dataLabels]="chartDataLabels"
+      class="m-t-30">
+    </apx-chart>
+  </mat-card-content>
+</mat-card>
+

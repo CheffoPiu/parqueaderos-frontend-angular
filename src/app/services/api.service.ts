@@ -22,6 +22,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/clientes-probables`);
   }
 
+  obtenerResumenSegmentos(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/clientes-segmentados`); // o la URL completa si es externa
+  }
+
   obtenerOcupacionSimulada(): Observable<any[]> {
     return this.http.get<any[]>('http://localhost:8000/ocupacion-real');  
   }
