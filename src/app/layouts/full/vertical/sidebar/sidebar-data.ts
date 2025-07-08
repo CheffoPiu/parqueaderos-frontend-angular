@@ -12,11 +12,17 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Clientes',
-    iconName: 'chart-bar',
+    iconName: 'user',
     bgcolor: 'secondary',
     route: '/dashboards/clientes',
   },
   {
+    displayName: 'Parqueaderos',
+    iconName: 'map',
+    bgcolor: 'secondary',
+    route: '/dashboards/parqueaderos',
+  },
+  /*{
     navCap: 'Home',
   },
   {
@@ -792,5 +798,5 @@ export const navItems: NavItem[] = [
     bgcolor: 'primary',
     route: 'https://www.google.com/',
     external: true,
-  },
+  },*/
 ];
