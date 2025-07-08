@@ -4,6 +4,7 @@ import { Routes } from '@angular/router';
 import { AppDashboard1Component } from './dashboard1/dashboard1.component';
 import { AppDashboard2Component } from './dashboard2/dashboard2.component';
 import { AppAnalisisAfluenciasComponent } from './analisis-afluencias/analisis-afluencias.component';
+import { AppClientesComponent } from './clientes/clientes.component';
 
 export const DashboardsRoutes: Routes = [
   {
@@ -28,6 +29,13 @@ export const DashboardsRoutes: Routes = [
         component: AppAnalisisAfluenciasComponent,
         data: {
           title: 'Analisis afluencias',
+        },
+      },
+      {
+        path: 'clientes',
+        component: AppClientesComponent,
+        data: {
+          title: 'Clientes',
         },
       },
     ],

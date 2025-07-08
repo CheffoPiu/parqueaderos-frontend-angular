@@ -11,10 +11,10 @@ export const navItems: NavItem[] = [
     route: '/dashboards/analisis-afluencias',
   },
   {
-    displayName: 'Dashboard 2',
+    displayName: 'Clientes',
     iconName: 'chart-bar',
     bgcolor: 'secondary',
-    route: '/dashboards/dashboard2',
+    route: '/dashboards/clientes',
   },
   {
     navCap: 'Home',
