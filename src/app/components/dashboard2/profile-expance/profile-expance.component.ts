@@ -17,6 +17,7 @@ import {
 } from 'ng-apexcharts';
 import { MaterialModule } from '../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
+import { MapaParqueaderosComponent } from 'src/app/mapa-parqueaderos/mapa-parqueaderos.component';
 
 export interface revenuetwoChart {
   series: ApexAxisChartSeries;
@@ -39,7 +40,7 @@ export interface revenuetwoChart {
   imports: [MaterialModule, NgApexchartsModule, TablerIconsModule],
   templateUrl: './profile-expance.component.html',
 })
-export class AppProfileExpanceCpmponent {
+export class AppProfileExpanceComponent {
   @ViewChild('chart') chart: ChartComponent = Object.create(null);
   public revenuetwoChart!: Partial<revenuetwoChart> | any;
 
