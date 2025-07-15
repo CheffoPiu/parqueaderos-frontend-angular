@@ -6,6 +6,16 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { ApiService } from '../services/api.service';
 
+interface Parqueadero {
+  parkingId: string;
+  nombre: string;
+  lat: number;
+  lng: number;
+  capacidad: number;
+  libres: number;
+  color: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-mapa-parqueaderos',
@@ -31,37 +41,23 @@ export class MapaParqueaderosComponent implements OnInit {
     center: latLng(-0.2202, -78.5127) // Quito centro
   };
 
-  parqueaderos = [
-    {
-      nombre: 'Centro Histórico',
-      lat: -0.2195,
-      lng: -78.5121,
-      capacidad: 20,
-      libres: 5
-    },
-    {
-      nombre: 'Mall El Jardín',
-      lat: -0.1762,
-      lng: -78.4809,
-      capacidad: 30,
-      libres: 12
-    },
-    {
-      nombre: 'La Carolina',
-      lat: -0.1912,
-      lng: -78.4881,
-      capacidad: 25,
-      libres: 9
-    }
+  parqueaderos: Parqueadero[] = [
+    
   ];
 
   ngOnInit(): void {
-    this.actualizarMapa();
+    this.api.obtenerParqueaderos().subscribe(parqueaderos => {
+      console.log('Parqueaderos recibidos:', parqueaderos);
+      this.parqueaderos = parqueaderos;
+      this.actualizarMapa(); // crea los marcadores
+    });
+
     setInterval(() => {
-      this.simularActualizacion();
-      this.actualizarMapa();
+      this.ActualizacionParqueaderos(); // solo actualiza ocupación
     }, 5000);
   }
+
+
 
   /*simularActualizacion() {
     this.parqueaderos.forEach(p => {
@@ -69,51 +65,63 @@ export class MapaParqueaderosComponent implements OnInit {
     });
   }*/
 
-  simularActualizacion() {
-    this.api.obtenerOcupacionSimulada().subscribe(data => {
-      this.parqueaderos = data.map((d, index) => ({
-        nombre: `Parqueadero ${index + 1}`,
-        lat: this.parqueaderos[index]?.lat || -0.22,
-        lng: this.parqueaderos[index]?.lng || -78.51,
-        capacidad: d.capacidad,
-        libres: d.capacidad - d.ocupados
-      }));
+  ActualizacionParqueaderos() {
+    this.api.obtenerOcupacion().subscribe(data => {
+      console.log('Datos de ocupación recibidos:', data);
+      data.forEach(d => {
+        const parqueadero = this.parqueaderos.find(p => p.parkingId === d.parkingId);
+        if (parqueadero) {
+          parqueadero.capacidad = d.capacidad;
+          parqueadero.libres = d.capacidad - d.ocupados;
+          parqueadero.color = d.color;
+        }
+      });
       this.actualizarMapa();
     });
   }
 
 
-  actualizarMapa() {
-  this.layers = this.parqueaderos.map(p => {
-    const color = p.libres > 0 ? 'green' : 'red';
 
-    return marker([p.lat, p.lng], {
-      icon: divIcon({
-        className: '', // evita que Leaflet agregue clases por defecto
-       html: `
-          <div style="
-            background-color: ${color};
-            color: white;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: bold;
-            box-shadow: 0 0 6px rgba(0,0,0,0.3);
-            font-size: 14px;
-            border: 2px solid white;
-          ">
-            🅿️<span style="margin-left: 2px;">${p.libres}</span>
-          </div>
-        `
-      })
-    }).bindPopup(`
-      <b>${p.nombre}</b><br>
-      Libres: ${p.libres} / ${p.capacidad}
-    `);
-  });
-}
+
+  actualizarMapa() {
+    const colorMap: Record<string, string> = {
+      verde: '#4caf50',
+      amarillo: '#ffeb3b',
+      rojo: '#f44336',
+      gray: 'gray'
+    };
+
+    this.layers = this.parqueaderos.map(p => {
+      const backgroundColor = colorMap[p.color] || 'gray';
+
+      return marker([p.lat, p.lng], {
+        icon: divIcon({
+          className: '',
+          html: `
+            <div style="
+              background-color: ${backgroundColor};
+              color: ${p.color === 'amarillo' ? 'black' : 'white'};
+              width: 36px;
+              height: 36px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 50%;
+              font-weight: bold;
+              box-shadow: 0 0 6px rgba(0,0,0,0.3);
+              font-size: 14px;
+              border: 2px solid white;
+            ">
+              🅿️<span style="margin-left: 2px;">${p.libres}</span>
+            </div>
+          `
+        })
+      }).bindPopup(`
+        <b>${p.nombre || 'Parqueadero'}</b><br>
+        Libres: ${p.libres} / ${p.capacidad}
+      `);
+    });
+  }
+
 
 }

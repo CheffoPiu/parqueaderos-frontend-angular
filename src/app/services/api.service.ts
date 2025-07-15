@@ -26,9 +26,38 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/clientes-segmentados`); // o la URL completa si es externa
   }
 
-  obtenerOcupacionSimulada(): Observable<any[]> {
+  obtenerOcupacion(): Observable<any[]> {
     return this.http.get<any[]>('http://localhost:8000/ocupacion-real');  
   }
 
+  obtenerParqueaderos() {
+    return this.http.get<any[]>('http://localhost:8000/parqueaderos');
+  }
 
+
+  obtenerPrediccionProphet(parqueaderoId: string = '') {
+    const params = parqueaderoId ? `?parqueadero_id=${parqueaderoId}&dias=7` : '?dias=7';
+    return this.http.get<{ prediccion: any[], error: { mae: number, mape: number, n: number } }>(
+      `http://localhost:8000/afluencia-predicha-prophet${params}`
+    );
+  }
+
+  interpretarAfluencia(datos: any[]) {
+    return this.http.post<{ interpretacion: string }>(
+      'http://localhost:8000/interpretar-afluencia',
+      datos
+    );
+  }
+
+  analizarImagen(base64_img: string, prompt: string): Observable<{ respuesta: string }> {
+    return this.http.post<{ respuesta: string }>(`${this.baseUrl}/analizar-imagen`, {
+      base64_img,
+      prompt
+    });
+  }
+
+
+
+
+  
 }

@@ -13,18 +13,22 @@
       <mat-form-field appearance="outline" style="width: 250px; margin-left: 20px;">
         <mat-label>Parqueadero</mat-label>
         <mat-select [(value)]="parqueaderoSeleccionado" (selectionChange)="filtrarPorParqueadero()">
-          <mat-option *ngFor="let p of parqueaderosDisponibles" [value]="p">
-            {{ p }}
+          <mat-option *ngFor="let p of parqueaderosDisponibles" [value]="p.nombre">
+            {{ p.nombre }}
           </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
   </mat-card-header>
 
+<button mat-raised-button color="primary" (click)="capturarTablaComoImagen()">
+  Capturar tabla y enviar a IA
+</button>
+
 
   <!-- Tabla Heatmap -->
   <mat-card-content class="p-t-30">
-    <div class="table-responsive">
+    <div  #tablaAfluencia id="tablaAfluencia" class="table-responsive" >
       <table class="table table-bordered text-center table-afluencia" style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
@@ -55,6 +59,62 @@
     </div>
   </mat-card-content>
 </mat-card>
+
+  <mat-card *ngIf="interpretacionIA" class="ia-card">
+  <mat-card-title class="ia-title">🧠 Análisis generado por IA</mat-card-title>
+  <mat-card-content>
+    <div class="ia-content" [innerHTML]="interpretacionIA"></div>
+  </mat-card-content>
+</mat-card>
+
+
+
+
+<mat-card class="m-t-30" *ngIf="matrixPred.length">
+  <mat-card-header>
+    <mat-card-title class="text-success">Predicción de Afluencia por Hora y Día</mat-card-title>
+    <mat-card-subtitle class="f-s-14">Siguientes 7 días</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content class="p-t-30">
+    <div class="table-responsive">
+      <table class="table table-bordered text-center table-afluencia" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="width: 10%; background: #f5f5f5;">Hora / Día</th>
+            <th *ngFor="let dia of diasPred" style="background: #f5f5f5;">
+              {{ dia }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hora of horasPred; let i = index">
+            <td><strong>{{ hora }}</strong></td>
+            <td *ngFor="let j of diasPred; let k = index"
+                [matTooltip]="'Día: ' + j + ', Hora: ' + hora + ', Afluencia estimada: ' + matrixPred[k][i]"
+                [style.background]="colorPred(matrixPred[k][i])"
+                style="padding: 10px; font-weight: 500; border-radius: 6px; font-size: 13px;">
+              {{ matrixPred[k][i] }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<div *ngIf="errorMAE !== null && errorMAPE !== null">
+  <mat-card class="mt-4">
+    <mat-card-title>📊 Precisión del modelo (últimos datos conocidos)</mat-card-title>
+    <mat-card-content>
+      <p><strong>MAE (Error Medio Absoluto):</strong> {{ errorMAE }}</p>
+      <p><strong>MAPE (Error Porcentual Medio):</strong> {{ errorMAPE }}%</p>
+      <p><strong>Datos evaluados:</strong> {{ errorN }}</p>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+
 
 <mat-card class="m-t-30" *ngIf="chartData.length && chartLabels.length">
   <mat-card-header>

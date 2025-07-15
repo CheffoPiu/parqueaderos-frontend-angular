@@ -12,3 +12,39 @@
 ::ng-deep .mat-mdc-form-field-subscript-wrapper {
 display: none !important;
 }
+
+.ia-card {
+  background-color: #f8f9fa;
+  border-left: 5px solid #4caf50;
+  margin-top: 20px;
+}
+
+.ia-title {
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.ia-content {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ia-content b {
+  color: #2c3e50;
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.ia-content br + b {
+  margin-top: 18px;
+}
+
+.ia-content ul {
+  padding-left: 20px;
+  margin-bottom: 12px;
+}
+
+.ia-content li {
+  margin-bottom: 6px;
+}
