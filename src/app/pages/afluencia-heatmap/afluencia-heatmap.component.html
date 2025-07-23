@@ -162,14 +162,14 @@
       <p><strong>MAE (Error Medio Absoluto):</strong> {{ errorMAE }}</p>
       <p><strong>MAPE (Error Porcentual Medio):</strong> {{ errorMAPE }}%</p>
       <!--p><strong>MAPE (Error Porcentual Medio):</strong> 34%</p-->
-      <p><strong>Datos evaluados:</strong> {{ errorN }}</p>
+      <p><strong>Cantidad de horas donde hubo dato real y predicción:</strong> {{ errorN }}</p>
     </mat-card-content>
   </mat-card>
 </div>
 
 
 
-<mat-card class="m-t-30" *ngIf="chartData.length && chartLabels.length">
+<!--mat-card class="m-t-30" *ngIf="chartData.length && chartLabels.length">
   <mat-card-header>
     <mat-card-title class="text-primary">Ranking de Parqueaderos más Usados</mat-card-title>
     <mat-card-subtitle class="f-s-14">Últimos 7 días</mat-card-subtitle>
@@ -183,5 +183,5 @@
       [colors]="['#3f51b5']"
     ></apx-chart>
   </mat-card-content>
-</mat-card>
+</mat-card-->
 
