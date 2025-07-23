@@ -42,17 +42,34 @@
           <tr *ngFor="let hora of horas; let i = index">
             <td><strong>{{ hora }}</strong></td>
             <td *ngFor="let j of dias; let k = index"
-                [matTooltip]="'Día: ' + j + ', Hora: ' + hora + ', Afluencia: ' + matrix[k][i]"
+                [matTooltip]="
+                  'Día: ' + j +
+                  ', Hora: ' + hora +
+                  (capacidadParqueaderoSeleccionado ?
+                    ', Ocupación: ' + matrix[k][i] + '/' + capacidadParqueaderoSeleccionado +
+                    ' (' +
+                    (((matrix[k][i] / capacidadParqueaderoSeleccionado) > 1 ? 100 : (matrix[k][i] / capacidadParqueaderoSeleccionado) * 100) | number:'1.0-0')
+                    + '%)' +
+                    ((matrix[k][i] / capacidadParqueaderoSeleccionado) > 1 ? ' ⚠️ Sobreocupado' : '')
+                  : ', Afluencia: ' + matrix[k][i])
+                "
                 [style.background]="color(matrix[k][i])"
-                style="
-                  padding: 10px;
-                  font-weight: 500;
-                  border-radius: 6px;
-                  font-size: 13px;
-                  transition: all 0.3s;
-                ">
-              {{ matrix[k][i] }}
+                style="padding: 10px; font-weight: 500; border-radius: 6px; font-size: 13px; transition: all 0.3s;">
+              <ng-container *ngIf="capacidadParqueaderoSeleccionado">
+                {{ matrix[k][i] }} / {{ capacidadParqueaderoSeleccionado }}
+                <span [style.color]="getColorPorcentaje(matrix[k][i])">
+                  ({{ ((matrix[k][i] / capacidadParqueaderoSeleccionado) > 1 ? 100 : (matrix[k][i] / capacidadParqueaderoSeleccionado) * 100) | number:'1.0-0' }}%)
+                  <ng-container *ngIf="(matrix[k][i] / capacidadParqueaderoSeleccionado) > 1">
+                    ⚠️
+                  </ng-container>
+                </span>
+              </ng-container>
+              <ng-container *ngIf="!capacidadParqueaderoSeleccionado">
+                {{ matrix[k][i] }}
+              </ng-container>
             </td>
+
+
           </tr>
         </tbody>
       </table>
@@ -76,8 +93,13 @@
     <mat-card-subtitle class="f-s-14">Siguientes 7 días</mat-card-subtitle>
   </mat-card-header>
 
+  <button mat-raised-button color="accent" (click)="capturarTablaPrediccionComoImagen()">
+  Capturar predicción y enviar a IA
+</button>
+
+
   <mat-card-content class="p-t-30">
-    <div class="table-responsive">
+    <div #tablaPrediccion id="tablaPrediccion" class="table-responsive">
       <table class="table table-bordered text-center table-afluencia" style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
@@ -91,17 +113,47 @@
           <tr *ngFor="let hora of horasPred; let i = index">
             <td><strong>{{ hora }}</strong></td>
             <td *ngFor="let j of diasPred; let k = index"
-                [matTooltip]="'Día: ' + j + ', Hora: ' + hora + ', Afluencia estimada: ' + matrixPred[k][i]"
+                [matTooltip]="
+                  'Día: ' + j +
+                  ', Hora: ' + hora +
+                  (capacidadParqueaderoSeleccionado ?
+                    ', Ocupación estimada: ' + matrixPred[k][i] + '/' + capacidadParqueaderoSeleccionado +
+                    ' (' +
+                    (((matrixPred[k][i] / capacidadParqueaderoSeleccionado) > 1 ? 100 : (matrixPred[k][i] / capacidadParqueaderoSeleccionado) * 100) | number:'1.0-0')
+                    + '%)' +
+                    ((matrixPred[k][i] / capacidadParqueaderoSeleccionado) > 1 ? ' ⚠️ Sobreocupado' : '')
+                  : ', Afluencia estimada: ' + matrixPred[k][i])
+                "
                 [style.background]="colorPred(matrixPred[k][i])"
                 style="padding: 10px; font-weight: 500; border-radius: 6px; font-size: 13px;">
-              {{ matrixPred[k][i] }}
+              <ng-container *ngIf="capacidadParqueaderoSeleccionado">
+                {{ matrixPred[k][i] }} / {{ capacidadParqueaderoSeleccionado }}
+                <span [style.color]="getColorPorcentaje(matrixPred[k][i])">
+                  ({{ ((matrixPred[k][i] / capacidadParqueaderoSeleccionado) > 1 ? 100 : (matrixPred[k][i] / capacidadParqueaderoSeleccionado) * 100) | number:'1.0-0' }}%)
+                  <ng-container *ngIf="(matrixPred[k][i] / capacidadParqueaderoSeleccionado) > 1">
+                    ⚠️
+                  </ng-container>
+                </span>
+              </ng-container>
+              <ng-container *ngIf="!capacidadParqueaderoSeleccionado">
+                {{ matrixPred[k][i] }}
+              </ng-container>
             </td>
           </tr>
         </tbody>
+
       </table>
     </div>
   </mat-card-content>
 </mat-card>
+
+<mat-card *ngIf="interpretacionIAPrediccion" class="ia-card">
+  <mat-card-title class="ia-title">🧠 Análisis IA de Predicción</mat-card-title>
+  <mat-card-content>
+    <div class="ia-content" [innerHTML]="interpretacionIAPrediccion"></div>
+  </mat-card-content>
+</mat-card>
+
 
 <div *ngIf="errorMAE !== null && errorMAPE !== null">
   <mat-card class="mt-4">
@@ -109,6 +161,7 @@
     <mat-card-content>
       <p><strong>MAE (Error Medio Absoluto):</strong> {{ errorMAE }}</p>
       <p><strong>MAPE (Error Porcentual Medio):</strong> {{ errorMAPE }}%</p>
+      <!--p><strong>MAPE (Error Porcentual Medio):</strong> 34%</p-->
       <p><strong>Datos evaluados:</strong> {{ errorN }}</p>
     </mat-card-content>
   </mat-card>

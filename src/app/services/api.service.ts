@@ -14,9 +14,21 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/predecir`, data);
   }
 
-  obtenerAfluencia(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/afluencia`);
+  obtenerAfluencia(
+    fechaInicio?: any,
+    fechaFin?: any,
+    parqueaderoId?: string
+  ): Observable<any> {
+    // Arma el query string dinámicamente solo con los filtros definidos
+    const params = [];
+    if (fechaInicio) params.push(`fecha_inicio=${fechaInicio}`);
+    if (fechaFin) params.push(`fecha_fin=${fechaFin}`);
+    if (parqueaderoId) params.push(`parqueadero_id=${parqueaderoId}`);
+    const query = params.length ? `?${params.join('&')}` : '';
+
+    return this.http.get(`${this.baseUrl}/afluencia${query}`);
   }
+
 
   obtenerClientesProbables(): Observable<any> {
     return this.http.get(`${this.baseUrl}/clientes-probables`);

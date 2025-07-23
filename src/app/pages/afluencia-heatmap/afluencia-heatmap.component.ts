@@ -26,7 +26,7 @@ export class AfluenciaHeatmapComponent implements OnInit {
   horas: string[] = [];
   matrix: number[][] = [];
 
-  parqueaderosDisponibles: { parkingId: string, nombre: string }[] = [];
+  parqueaderosDisponibles: { parkingId: string, nombre: string, capacidad: number }[] = [];
   parqueaderoSeleccionado: string = 'Todos';
   originalData: any[] = [];
   chartLabels: string[] = [];
@@ -40,8 +40,10 @@ export class AfluenciaHeatmapComponent implements OnInit {
   errorMAPE: number | null = null;
   errorN: number | null = null;
   interpretacionIA: string | null = null;
+  interpretacionIAPrediccion: string | null = null;
 
   @ViewChild('tablaAfluencia') tablaAfluencia!: ElementRef;
+  @ViewChild('tablaPrediccion') tablaPrediccion!: ElementRef;
 
 
   constructor(private api: ApiService,
@@ -51,11 +53,11 @@ export class AfluenciaHeatmapComponent implements OnInit {
   ngOnInit(): void {
     this.api.obtenerParqueaderos().subscribe(parqueaderos => {
       this.parqueaderosDisponibles = parqueaderos;
-      this.parqueaderosDisponibles.unshift({ parkingId: '', nombre: 'Todos' }); // Agrega opción 'Todos' al inicio
-          console.log('🔵 Cargando datos de afluencia...', this.parqueaderosDisponibles);
+      console.log('🔵 Cargando datos de afluencia...', this.parqueaderosDisponibles);
     });
 
-  this.api.obtenerAfluencia().subscribe((res: RegistroAfluencia[]) => {
+          
+    this.api.obtenerAfluencia('2025-07-07','2025-07-14').subscribe((res: RegistroAfluencia[]) => {
       console.log("🔵 Datos crudos:", res);
       this.originalData = res;
 
@@ -66,12 +68,8 @@ export class AfluenciaHeatmapComponent implements OnInit {
         console.log("🧠 Interpretación IA:", this.interpretacionIA);
       });*/
 
-      const parqueaderos = Array.from(
-        new Set(res.map((r: any) => r.estacionamiento))
-      ).sort();
-      this.parqueaderosDisponibles = ['Todos', ...parqueaderos];
 
-      this.actualizarTabla(res);
+      this.actualizarTabla([]);
       const ranking = this.obtenerRankingParqueaderos();
       this.chartLabels = ranking.map(r => r[0]);
       this.chartData = ranking.map(r => r[1]);
@@ -82,6 +80,22 @@ export class AfluenciaHeatmapComponent implements OnInit {
   }
 
   actualizarTabla(datos: any[]) {
+    if (datos.length === 0) {
+      // Definir los días y horas posibles (puedes ajustar esto según tus necesidades)
+      const diasUnicos = [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+      ];
+      const horasUnicas = Array.from({ length: 24 }, (_, i) => i);
+
+      const matriz: number[][] = diasUnicos.map(() => Array(horasUnicas.length).fill(0));
+
+      this.dias = diasUnicos;
+      this.horas = horasUnicas.map(h => `${String(h).padStart(2, '0')}:00`);
+      this.matrix = matriz;
+      return;
+    }
+
+    // ... tu código normal para cuando sí hay datos
     const diasUnicos = [...new Set(datos.map(r => r.dia_semana))];
     const horasUnicas = [...new Set(datos.map(r => r.hora))].sort((a, b) => a - b);
 
@@ -91,7 +105,7 @@ export class AfluenciaHeatmapComponent implements OnInit {
       const fila = diasUnicos.indexOf(r.dia_semana);
       const col = horasUnicas.indexOf(r.hora);
       if (fila >= 0 && col >= 0) {
-        matriz[fila][col] += r.conteo; 
+        matriz[fila][col] += r.conteo;
       }
     });
 
@@ -100,6 +114,7 @@ export class AfluenciaHeatmapComponent implements OnInit {
     this.matrix = matriz;
   }
 
+
   filtrarPorParqueadero() {
     const filtrados = this.parqueaderoSeleccionado === 'Todos'
       ? this.originalData
@@ -107,22 +122,58 @@ export class AfluenciaHeatmapComponent implements OnInit {
     
       console.log('🔵 Datos filtrados por parqueadero:', this.parqueaderoSeleccionado, filtrados);
     this.actualizarTabla(filtrados);
-  // Buscar el ID correspondiente al nombre
-  const parqueadero = this.parqueaderosDisponibles.find(p => p.nombre === this.parqueaderoSeleccionado);
-  console.log("asdad",parqueadero)
-  const id = parqueadero ? parqueadero.parkingId : ''; // si no lo encuentra, manda global
-  console.log('🔵 Cargando predicción Prophet para parqueadero:', id);
-  this.cargarPrediccionProphet(id);
+    // Buscar el ID correspondiente al nombre
+    const parqueadero = this.parqueaderosDisponibles.find(p => p.nombre === this.parqueaderoSeleccionado);
+    console.log("asdad",parqueadero)
+    const id = parqueadero ? parqueadero.parkingId : ''; // si no lo encuentra, manda global
+    console.log('🔵 Cargando predicción Prophet para parqueadero:', id);
+    this.cargarPrediccionProphet(id);
   }
 
 
   color(valor: number): string {
-    if (valor === 0) return '#f5f5f5';
-    if (valor < 5) return '#fde0dc';
-    if (valor < 10) return '#ffab91';
-    return '#ff7043';
+    if (this.capacidadParqueaderoSeleccionado) {
+      const porcentaje = valor / this.capacidadParqueaderoSeleccionado;
+      if (porcentaje === 0) return '#f5f5f5';
+      if (porcentaje < 0.6) return '#a5d6a7';   // Verde claro
+      if (porcentaje < 0.9) return '#ffeb3b';   // Amarillo
+      return '#ef5350';                         // Rojo
+    } else {
+      // Color por valor absoluto si es "Todos"
+      if (valor === 0) return '#f5f5f5';
+      if (valor < 5) return '#fde0dc';
+      if (valor < 10) return '#ffab91';
+      return '#ff7043';
+    }
   }
 
+  colorPred(valor: number): string {
+    if (this.capacidadParqueaderoSeleccionado) {
+      const porcentaje = valor / this.capacidadParqueaderoSeleccionado;
+      if (porcentaje === 0) return '#f5f5f5';
+      if (porcentaje < 0.6) return '#a5d6a7';   // Verde claro
+      if (porcentaje < 0.9) return '#ffeb3b';   // Amarillo
+      return '#ef5350';                         // Rojo
+    } else {
+      // Color por valor absoluto si es "Todos"
+      if (valor === 0) return '#f5f5f5';
+      if (valor < 5) return '#fde0dc';
+      if (valor < 10) return '#ffab91';
+      return '#ff7043';
+    }
+  }
+
+  getColorPorcentaje(valor: number): string {
+    if (this.capacidadParqueaderoSeleccionado) {
+      const porcentaje = valor / this.capacidadParqueaderoSeleccionado;
+      // Si la celda es roja (>90% ocupado), el texto va blanco
+      if (porcentaje >= 0.9) return '#fff'; // blanco
+      return '#888'; // gris suave para los demás casos
+    }
+    return '#888';
+  }
+
+  
   obtenerRankingParqueaderos() {
     const resumen = new Map<string, number>();
 
@@ -156,7 +207,8 @@ export class AfluenciaHeatmapComponent implements OnInit {
 
     const prediccion = res.prediccion;
     const transformado = this.transformarPrediccionAHeatmap(prediccion);
-    this.actualizarTablaPrediccion(prediccion);
+    console.log('🔵 Datos transformados para heatmap:', transformado);
+    this.actualizarTablaPrediccion(transformado);
 
     // Actualiza errores
     this.errorMAE = res.error.mae;
@@ -183,41 +235,50 @@ export class AfluenciaHeatmapComponent implements OnInit {
   }
 
   actualizarTablaPrediccion(prediccion: any[]) {
-    const diasMap = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const diasMap = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const diasUnicos = diasMap;
+  const horasUnicas = Array.from({ length: 24 }, (_, i) => i);
 
-    // Extraer día y hora
-    const datos = prediccion.map(p => {
-      const fecha = new Date(p.ds);
-      return {
-        dia: diasMap[fecha.getDay()],
-        hora: fecha.getHours(),
-        conteo: p.yhat
-      };
+  // Inicializa la matriz
+  const matriz: number[][] = diasUnicos.map(() => Array(horasUnicas.length).fill(0));
+
+  // Agrupa para promediar si recibes múltiples semanas, si no, simplemente llena la matriz.
+  const grupos: { [clave: string]: number[] } = {};
+  prediccion.forEach(p => {
+    const clave = `${p.dia_semana}|${p.hora}`;
+    if (!grupos[clave]) grupos[clave] = [];
+    grupos[clave].push(p.conteo);
+  });
+
+  diasUnicos.forEach((dia, i) => {
+    horasUnicas.forEach((hora, j) => {
+      const clave = `${dia}|${hora}`;
+      const valores = grupos[clave] || [];
+      matriz[i][j] = valores.length
+        ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length)
+        : 0;
     });
+  });
 
-    const diasUnicos = [...new Set(datos.map(r => r.dia))];
-    const horasUnicas = [...new Set(datos.map(r => r.hora))].sort((a, b) => a - b);
-    const matriz: number[][] = diasUnicos.map(() => Array(horasUnicas.length).fill(0));
+  // === NUEVO: Filtrar horas ===
+  // Solo queremos horas donde al menos en algún día hay valor distinto de cero
+  const horasConMovimiento: number[] = [];
+  horasUnicas.forEach((hora, idx) => {
+    const hayMovimiento = diasUnicos.some((_, diaIdx) => matriz[diaIdx][idx] > 0);
+    if (hayMovimiento) horasConMovimiento.push(hora);
+  });
 
-    datos.forEach(r => {
-      const fila = diasUnicos.indexOf(r.dia);
-      const col = horasUnicas.indexOf(r.hora);
-      if (fila >= 0 && col >= 0) {
-        matriz[fila][col] += r.conteo;
-      }
-    });
+  // Filtrar matriz solo a esas horas
+  const matrizFiltrada = matriz.map(fila =>
+    horasConMovimiento.map(hora => fila[hora])
+  );
 
-    this.diasPred = diasUnicos;
-    this.horasPred = horasUnicas.map(h => `${String(h).padStart(2, '0')}:00`);
-    this.matrixPred = matriz;
-  }
+  this.diasPred = diasUnicos;
+  this.horasPred = horasConMovimiento.map(h => `${String(h).padStart(2, '0')}:00`);
+  this.matrixPred = matrizFiltrada;
+}
 
-  colorPred(valor: number): string {
-    if (valor === 0) return '#f5f5f5';
-    if (valor < 5) return '#e8f5e9';
-    if (valor < 10) return '#a5d6a7';
-    return '#66bb6a';
-  }
+
 
   capturarTablaComoImagen() {
     const tabla = this.tablaAfluencia.nativeElement;
@@ -247,6 +308,37 @@ export class AfluenciaHeatmapComponent implements OnInit {
       .replace(/(?:\r\n|\r|\n)/g, '<br>')           // saltos de línea
       .replace(/- (.*?)(?=<br>)/g, '• $1');          // viñetas
   }
+
+  get capacidadParqueaderoSeleccionado(): number | null {
+    if (this.parqueaderoSeleccionado === 'Todos') return null;
+    const parqueadero = this.parqueaderosDisponibles.find(
+      p => p.nombre === this.parqueaderoSeleccionado
+    );
+    return parqueadero?.capacidad ?? null;
+  }
+
+  capturarTablaPrediccionComoImagen() {
+  const tabla = this.tablaPrediccion.nativeElement;
+
+  html2canvas(tabla).then(canvas => {
+    const base64image = canvas.toDataURL('image/png');
+
+    const prompt = 'Analiza esta tabla de predicción de afluencia horaria por día en un parqueadero. La tabla representa la cantidad estimada de personas que usarán el parqueadero en cada hora de cada día de la semana (siguientes 7 días). Quiero que identifiques: '+
+    '1. Los picos y valles estimados de afluencia para los próximos días.'+
+    '2. Riesgo de sobreocupación según la predicción y recomendaciones para evitarlo.'+
+    '3. Oportunidades para ajustar la operación según las tendencias previstas.'+
+    'Devuelve el análisis en formato ejecutivo, claro y accionable para el gerente.';
+
+    this.api.analizarImagen(base64image, prompt).subscribe(resp => {
+      console.log("🧠 Respuesta IA predicción:", resp);
+      // Puedes mostrar en otro card, o sobrescribir la misma variable
+      this.interpretacionIAPrediccion = this.convertirMarkdownBasico(resp.respuesta);
+    }, error => {
+      console.error("⚠️ Error al analizar imagen predicción:", error);
+    });
+  });
+}
+
 
 
 }
